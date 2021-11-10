@@ -9,5 +9,27 @@
     />
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
-  <body></body>
+  <body class="container">
+    <div class="input-area">
+      <div id="drop-area">
+        <i class="icon bi bi-cloud-arrow-up"></i>
+
+        <div id="notice">拖拽或点击选择 sourcemap.zip 文件</div>
+
+        <input id="file" type="file" accept="application/zip" hidden />
+      </div>
+
+      <textarea id="log" rows="10" placeholder="请输入错误信息"> </textarea>
+    </div>
+
+    <div class="text-center" id="loading" style="display: none">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div class="output-area">
+      <div id="result"></div>
+    </div>
+  </body>
 </html>
