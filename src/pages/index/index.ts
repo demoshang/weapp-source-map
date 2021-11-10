@@ -13,6 +13,8 @@ import {
   tap,
   throttleTime,
 } from 'rxjs';
+import { filterNil, filterUndefined } from '../../utils/filter';
+import { ErrorRegex } from './constants';
 import { addCopy, getClipboardChange } from './copy';
 import { DragUploadFile, getDragUploadShare } from './drag-upload';
 import './index.scss';
@@ -20,7 +22,6 @@ import { parseErrors } from './parse-error';
 import { buildList } from './show-result';
 import { buildConsumer } from './source-map';
 import './source-map/init';
-import { filterNil, filterUndefined } from '../../utils/filter';
 
 const uploadEle = document.querySelector('#drop-area')!;
 const fileEle = document.querySelector<HTMLInputElement>('#file')!;
@@ -35,6 +36,10 @@ const clipboardLog$ = getClipboardChange(logEle).pipe(
     const inputValue = value.replace(/[\r\n]+/g, '\n').trim();
 
     if (!inputValue) {
+      return undefined;
+    }
+
+    if (!ErrorRegex.test(inputValue)) {
       return undefined;
     }
 

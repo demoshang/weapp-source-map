@@ -1,5 +1,6 @@
 import { BasicSourceMapConsumer } from 'source-map';
 import { filterNil } from '../../utils/filter';
+import { ErrorRegex } from './constants';
 
 interface MappedError {
   name: string | null;
@@ -16,16 +17,14 @@ async function parseErrors(
   getConsumer: (sourceMapFilePath: string) => Promise<BasicSourceMapConsumer | null | undefined>,
   errorLog: string,
 ): Promise<MappedError[]> {
-  const matches = [...errorLog.matchAll(/https:\/\/usr\/\/?(.*app-service.js):(\d+):(\d+)/g)].map(
-    ([full, file, line, column]) => {
-      return {
-        full,
-        file,
-        line,
-        column,
-      };
-    },
-  );
+  const matches = [...errorLog.matchAll(ErrorRegex)].map(([full, file, line, column]) => {
+    return {
+      full,
+      file,
+      line,
+      column,
+    };
+  });
 
   const list = await Promise.all(
     matches
