@@ -6,6 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const WebpackCdnPlugin = require('webpack-cdn-plugin');
 const HtmlWebpackTagsPlugin = require('html-webpack-tags-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const multiPages = glob.sync('./src/pages/**/*.html').map((filepath) => {
   const { dir } = path.parse(filepath);
@@ -71,6 +72,7 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    plugins: [new TsconfigPathsPlugin()],
     fallback: {
       fs: false,
     },
