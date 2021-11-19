@@ -1,6 +1,19 @@
+import { delay } from '@/utils/promise';
+import { ExcludeObjectUndefined } from '@/utils/type';
 import ClipboardJS from 'clipboard';
-import { distinctUntilChanged, ReplaySubject, share } from 'rxjs';
-import { delay } from '../../../utils/promise';
+import {
+  distinctUntilKeyChanged,
+  filter,
+  from,
+  fromEvent,
+  map,
+  merge,
+  OperatorFunction,
+  share,
+  switchMap,
+  tap,
+  throttleTime,
+} from 'rxjs';
 
 const addCopy = (() => {
   let cache: ClipboardJS;
@@ -25,58 +38,95 @@ const addCopy = (() => {
   };
 })();
 
+interface ClipBoardEmitResult {
+  value: string | undefined;
+  event: Event;
+  type: string;
+}
+
+type ClipBoardChangeResult = ExcludeObjectUndefined<ClipBoardEmitResult, 'value'>;
+
 const getClipboardChange = (ele: HTMLTextAreaElement) => {
-  let subject = new ReplaySubject<{ type: string; value: string }>(1);
+  const emitText = async (o: { event: Event; type: string }) => {
+    const isFocused = document.hasFocus();
+    if (isFocused) {
+      await delay(500);
+    }
 
-  const emitText = (type: string) => {
-    (async () => {
-      const isFocused = document.hasFocus();
-      if (isFocused) {
-        await delay(500);
-      }
-
-      const text = await navigator.clipboard.readText();
-      subject.next({
-        type,
-        value: text,
-      });
-    })().catch((e) => {
-      console.warn(e);
+    const text = await navigator.clipboard.readText().catch((e) => {
+      return e;
     });
+
+    if (text instanceof Error) {
+      return {
+        ...o,
+        value: undefined,
+        error: text,
+      };
+    }
+
+    return {
+      ...o,
+      value: text,
+    };
   };
 
-  // 页面点击
-  document.addEventListener('click', (e) => {
-    emitText('document click');
-  });
-
-  // 输入框聚焦
-  ele.addEventListener('focus', () => {
-    emitText('textarea focus');
-  });
-
-  // 页面从隐藏切换到显示
-  document.addEventListener('webkitvisibilitychange', () => {
-    if (!document.webkitHidden) {
-      emitText('webkitvisibilitychange');
-    }
-  });
-
-  // 页面聚焦
-  window.addEventListener('focus', () => {
-    emitText('window focus');
-  });
-
-  // 页面加载完成
-  window.addEventListener(
-    'load',
-    () => {
-      emitText('window load');
-    },
-    { once: true },
+  return merge(
+    fromEvent(document, 'click').pipe(
+      map((event) => {
+        return {
+          event,
+          type: 'document click',
+        };
+      }),
+    ),
+    fromEvent(ele, 'focus').pipe(
+      map((event) => {
+        return {
+          event,
+          type: 'textarea focus',
+        };
+      }),
+    ),
+    fromEvent(document, 'webkitvisibilitychange').pipe(
+      filter(() => {
+        return !document.webkitHidden;
+      }),
+      map((event) => {
+        return {
+          event,
+          type: 'webkit visibility change',
+        };
+      }),
+    ),
+    fromEvent(window, 'focus').pipe(
+      map((event) => {
+        return {
+          event,
+          type: 'window focus',
+        };
+      }),
+    ),
+    fromEvent(window, 'load', { once: true }).pipe(
+      map((event) => {
+        return {
+          event,
+          type: 'window load',
+        };
+      }),
+    ),
+  ).pipe(
+    throttleTime(100),
+    switchMap((o) => {
+      return from(emitText(o));
+    }),
+    tap(console.info),
+    filter(({ value }) => {
+      return !!value;
+    }) as OperatorFunction<ClipBoardEmitResult, ClipBoardChangeResult>,
+    distinctUntilKeyChanged('value'),
+    share(),
   );
-
-  return subject.pipe(distinctUntilChanged(), share());
 };
 
-export { addCopy, getClipboardChange };
+export { addCopy, getClipboardChange, ClipBoardChangeResult };
