@@ -44,4 +44,5 @@ jobs:
         run: |
           node .github/scripts/replace.js
           pnpm run build
+          echo "weapp-source-map.xinshangshangxin.com" > dist/CNAME
           bash .github/scripts/push.sh
