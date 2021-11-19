@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { resolve: pathResolve, parse, basename } = require('path');
+const { parse, basename } = require('path');
 const { promisify } = require('util');
 const { exec: originExec } = require('child_process');
 
@@ -7,9 +7,6 @@ const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const exec = promisify(originExec);
 const glob = require('glob');
-
-const inputFilePath = pathResolve(__dirname, '../../index.html');
-const outFilePath = pathResolve(__dirname, '../../index.html');
 
 async function getBuildVersion() {
   const { stdout: currentBranch } = await exec(`git rev-parse --abbrev-ref HEAD`);
