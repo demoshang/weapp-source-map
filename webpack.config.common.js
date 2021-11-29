@@ -99,6 +99,7 @@ module.exports = {
       ],
       scripts: [],
     }),
+
     new WebpackCdnPlugin({
       prodUrl: '//cdn.jsdelivr.net/npm/:name@:version/dist/:path',
       prod: true,
@@ -128,9 +129,14 @@ module.exports = {
       ],
       publicPath: '/node_modules',
     }),
-  ],
+  ].filter(Boolean),
   stats: {
     colors: true,
   },
   devtool: 'source-map',
+  performance: {
+    assetFilter: (assetFilename) => {
+      return !/\.map$|^static\//.test(assetFilename);
+    },
+  },
 };

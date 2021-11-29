@@ -6,12 +6,16 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const HTMLInlineCSSWebpackPlugin = require('html-inline-css-webpack-plugin').default;
-
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const common = require('./webpack.config.common.js');
+
+const IS_ANALYSIS = false;
 
 module.exports = merge(common, {
   mode: 'production',
   optimization: {
+    concatenateModules: !IS_ANALYSIS,
+
     minimize: true,
     minimizer: [
       new CssMinimizerPlugin(),
@@ -44,11 +48,14 @@ module.exports = merge(common, {
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['**/*', '!.git'],
     }),
-    new webpack.DefinePlugin({}),
     new MiniCssExtractPlugin({
       filename: '[name].[chunkhash:8].css',
       chunkFilename: '[id].css',
     }),
     new HTMLInlineCSSWebpackPlugin(),
-  ],
+
+    new webpack.DefinePlugin({}),
+
+    IS_ANALYSIS && new BundleAnalyzerPlugin(),
+  ].filter(Boolean),
 });

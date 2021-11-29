@@ -29,5 +29,5 @@ module.exports = merge(common, {
       DOMAIN: 'http://localhost',
     }),
     // new ErudaPlugin({ force: true }),
-  ],
+  ].filter(Boolean),
 });
