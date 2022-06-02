@@ -4,7 +4,8 @@ import { defer } from '../../utils/promise';
 const getFileContent = (zip: JSZip) => {
   const cache: { [key: string]: Promise<any> } = {};
 
-  return async (filePath: string) => {
+  return async (v: string) => {
+    const filePath = v.replace(/^\//, '');
     if (!cache[filePath]) {
       const deferred = defer<object>();
       cache[filePath] = deferred.promise;

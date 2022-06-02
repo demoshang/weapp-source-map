@@ -17,14 +17,16 @@ async function parseErrors(
   getConsumer: (sourceMapFilePath: string) => Promise<BasicSourceMapConsumer | null | undefined>,
   errorLog: string,
 ): Promise<MappedError[]> {
-  const matches = [...errorLog.matchAll(ErrorRegex)].map(([full, file, line, column]) => {
-    return {
-      full,
-      file,
-      line,
-      column,
-    };
-  });
+  const matches = [...errorLog.matchAll(new RegExp(ErrorRegex))].map(
+    ([full, file, line, column]) => {
+      return {
+        full,
+        file,
+        line,
+        column,
+      };
+    },
+  );
 
   const list = await Promise.all(
     matches
